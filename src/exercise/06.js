@@ -1,33 +1,50 @@
-// Basic Forms
-// http://localhost:3000/isolated/exercise/06.js
+// Rendering Lists
+// http://localhost:3000/isolated/exercise/07.js
 
 import * as React from 'react'
 
-function UsernameForm({onSubmitUsername}) {
-  function handleSubmit(event) {
-    // Stop the browser from refreshing the page
-    event.preventDefault()
+const allItems = [
+  {id: 'apple', value: '🍎 apple'},
+  {id: 'orange', value: '🍊 orange'},
+  {id: 'grape', value: '🍇 grape'},
+  {id: 'pear', value: '🍐 pear'},
+]
 
-    // event.target is the <form>; find the input by its id
-    const value = event.target.elements.usernameInput.value
+function App() {
+  const [items, setItems] = React.useState(allItems)
 
-    onSubmitUsername(value)
+  function addItem() {
+    // Updater form: always works from the latest state, even with batched updates
+    setItems(prevItems => {
+      const itemIds = prevItems.map(i => i.id)
+      const nextItem = allItems.find(i => !itemIds.includes(i.id))
+      // find() returns undefined when every item is already shown,
+      // so guard here instead of relying only on the disabled button
+      return nextItem ? [...prevItems, nextItem] : prevItems
+    })
+  }
+
+  function removeItem(item) {
+    setItems(prevItems => prevItems.filter(i => i.id !== item.id))
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label htmlFor="usernameInput">Username:</label>
-        <input id="usernameInput" type="text" />
-      </div>
-      <button type="submit">Submit</button>
-    </form>
+    <div className="keys">
+      <button disabled={items.length >= allItems.length} onClick={addItem}>
+        add item
+      </button>
+      <ul>
+        {items.map(item => (
+          // key comes from the data, so it stays stable when items move or are removed
+          <li key={item.id}>
+            <button onClick={() => removeItem(item)}>remove</button>{' '}
+            <label htmlFor={`${item.id}-input`}>{item.value}</label>{' '}
+            <input id={`${item.id}-input`} defaultValue={item.value} />
+          </li>
+        ))}
+      </ul>
+    </div>
   )
-}
-
-function App() {
-  const onSubmitUsername = username => alert(`You entered: ${username}`)
-  return <UsernameForm onSubmitUsername={onSubmitUsername} />
 }
 
 export default App
