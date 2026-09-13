@@ -14,12 +14,18 @@ function App() {
   const [items, setItems] = React.useState(allItems)
 
   function addItem() {
-    const itemIds = items.map(i => i.id)
-    setItems([...items, allItems.find(i => !itemIds.includes(i.id))])
+    // Updater form: always reads the latest state, even when updates are batched
+    setItems(prevItems => {
+      const itemIds = prevItems.map(i => i.id)
+      const nextItem = allItems.find(i => !itemIds.includes(i.id))
+      // find() returns undefined once every item is shown, so guard here
+      // instead of relying only on the disabled button
+      return nextItem ? [...prevItems, nextItem] : prevItems
+    })
   }
 
   function removeItem(item) {
-    setItems(items.filter(i => i.id !== item.id))
+    setItems(prevItems => prevItems.filter(i => i.id !== item.id))
   }
 
   return (
@@ -29,6 +35,7 @@ function App() {
       </button>
       <ul>
         {items.map(item => (
+          // key comes from the data, so it stays stable when items are removed
           <li key={item.id}>
             <button onClick={() => removeItem(item)}>remove</button>{' '}
             <label htmlFor={`${item.id}-input`}>{item.value}</label>{' '}
